@@ -38,6 +38,7 @@
   ],
   "routes": [
     { "handle": "filesystem" },
+    { "src": "/assets/(.*)", "dest": "/assets/$1" },
     { "src": "^/(?!assets/).*", "dest": "/index.html" }
   ]
 } 
