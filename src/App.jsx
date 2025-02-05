@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 
 import LessonDashboard from './components/LessonDashboard';
 import AttendanceDashboard from './components/AttendanceDashboard';
-import AssignmentDashboard from './components/AssignmentDashboard';
+import AssignmentManagementDashboard from './components/AssignmentManagementDashboard';
 import CommunicationDashboard from './components/CommunicationDashboard';
 import ClassroomManagementDashboard from './components/ClassroomManagementDashboard';
 import InteractiveLearningDashboard from './components/InteractiveLearningDashboard';
@@ -28,7 +28,7 @@ function App() {
             <Route path="/" element={<div className="text-center text-2xl font-semibold">Welcome! Select a dashboard from the navigation above.</div>} />
             <Route path="/lessons" element={<LessonDashboard />} />
             <Route path="/attendance" element={<AttendanceDashboard />} />
-            <Route path="/assignments" element={<AssignmentDashboard />} />
+            <Route path="/assignments" element={<AssignmentManagementDashboard />} />
             <Route path="/communication" element={<CommunicationDashboard />} />
             <Route path="/classroom" element={<ClassroomManagementDashboard />} />
             <Route path="/interactive" element={<InteractiveLearningDashboard />} />

@@ -7,7 +7,8 @@
     "dev:client": "vite",
     "dev:server": "node server.js",
     "clean": "npx rimraf dist",
-    "build": "npm run clean && vite build",
+    "build": "npm run clean && npm run generate-favicon && vite build",
+    "generate-favicon": "node scripts/generate-favicon.js",
     "vercel-build": "npm run build",
     "preview": "vite preview"
   },
@@ -24,6 +25,7 @@
     "concurrently": "^8.0.0",
     "postcss": "^8.4.16",
     "rimraf": "^3.0.2",
+    "sharp": "^0.32.6",
     "tailwindcss": "^3.2.7",
     "vite": "^4.0.0"
   }
