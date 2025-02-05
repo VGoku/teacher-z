@@ -404,120 +404,139 @@ const AustralianContent = ({ onSelectContent }) => {
             {selectedContent && (
                 <div className="space-y-4">
                     <Card title="Educational Resources" className="mt-4">
-                        <Collapse defaultActiveKey={['1']} className="bg-white">
-                            <Panel header="Cultural Context" key="1">
-                                <div className="space-y-4">
-                                    <div>
-                                        <h4 className="font-medium mb-2">Historical Background</h4>
-                                        <p className="text-gray-700">
-                                            {selectedContent.educationalResources.culturalContext.historicalBackground}
-                                        </p>
-                                    </div>
-                                    <div>
-                                        <h4 className="font-medium mb-2">Cultural Significance</h4>
-                                        <p className="text-gray-700">
-                                            {selectedContent.educationalResources.culturalContext.culturalSignificance}
-                                        </p>
-                                    </div>
-                                    <div>
-                                        <h4 className="font-medium mb-2">Teaching Resources</h4>
-                                        <div className="flex flex-wrap gap-2">
-                                            {selectedContent.educationalResources.culturalContext.teachingResources.map((resource, index) => (
+                        <Collapse
+                            defaultActiveKey={['1']}
+                            className="bg-white"
+                            items={[
+                                {
+                                    key: '1',
+                                    label: 'Cultural Context',
+                                    children: (
+                                        <div className="space-y-4">
+                                            <div>
+                                                <h4 className="font-medium mb-2">Historical Background</h4>
+                                                <p className="text-gray-700">
+                                                    {selectedContent.educationalResources.culturalContext.historicalBackground}
+                                                </p>
+                                            </div>
+                                            <div>
+                                                <h4 className="font-medium mb-2">Cultural Significance</h4>
+                                                <p className="text-gray-700">
+                                                    {selectedContent.educationalResources.culturalContext.culturalSignificance}
+                                                </p>
+                                            </div>
+                                            <div>
+                                                <h4 className="font-medium mb-2">Teaching Resources</h4>
+                                                <div className="flex flex-wrap gap-2">
+                                                    {selectedContent.educationalResources.culturalContext.teachingResources.map((resource, index) => (
+                                                        <a
+                                                            key={index}
+                                                            href={resource.url}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="inline-flex items-center px-3 py-1 bg-white border rounded-full text-sm hover:bg-blue-50"
+                                                        >
+                                                            {resource.title}
+                                                            <Tag className="ml-2" color="blue">{resource.type}</Tag>
+                                                        </a>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )
+                                },
+                                {
+                                    key: '2',
+                                    label: 'Curriculum Links',
+                                    children: (
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            {selectedContent.educationalResources.curriculumLinks.map((link, index) => (
                                                 <a
                                                     key={index}
-                                                    href={resource.url}
+                                                    href={link.url}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
-                                                    className="inline-flex items-center px-3 py-1 bg-white border rounded-full text-sm hover:bg-blue-50"
+                                                    className="block p-4 border rounded-lg hover:bg-gray-50"
                                                 >
-                                                    {resource.title}
-                                                    <Tag className="ml-2" color="blue">{resource.type}</Tag>
+                                                    <h5 className="font-medium text-blue-600">{link.platform}</h5>
+                                                    <p className="text-sm text-gray-600">{link.description}</p>
                                                 </a>
                                             ))}
                                         </div>
-                                    </div>
-                                </div>
-                            </Panel>
+                                    )
+                                },
+                                {
+                                    key: '3',
+                                    label: 'Lesson Plans',
+                                    children: (
+                                        <div>
+                                            {selectedContent.educationalResources.lessonPlans.map((plan, index) => (
+                                                <Card key={index} className="mb-4" size="small">
+                                                    <div className="space-y-3">
+                                                        <div className="flex justify-between items-start">
+                                                            <h5 className="font-medium">{plan.title}</h5>
+                                                            <Tag color="green">{plan.duration}</Tag>
+                                                        </div>
 
-                            <Panel header="Curriculum Links" key="2">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    {selectedContent.educationalResources.curriculumLinks.map((link, index) => (
-                                        <a
-                                            key={index}
-                                            href={link.url}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="block p-4 border rounded-lg hover:bg-gray-50"
-                                        >
-                                            <h5 className="font-medium text-blue-600">{link.platform}</h5>
-                                            <p className="text-sm text-gray-600">{link.description}</p>
-                                        </a>
-                                    ))}
-                                </div>
-                            </Panel>
+                                                        <div>
+                                                            <h6 className="text-sm font-medium mb-1">Objectives:</h6>
+                                                            <ul className="list-disc list-inside">
+                                                                {plan.objectives.map((objective, idx) => (
+                                                                    <li key={idx} className="text-sm text-gray-600">{objective}</li>
+                                                                ))}
+                                                            </ul>
+                                                        </div>
 
-                            <Panel header="Lesson Plans" key="3">
-                                {selectedContent.educationalResources.lessonPlans.map((plan, index) => (
-                                    <Card key={index} className="mb-4" size="small">
-                                        <div className="space-y-3">
-                                            <div className="flex justify-between items-start">
-                                                <h5 className="font-medium">{plan.title}</h5>
-                                                <Tag color="green">{plan.duration}</Tag>
-                                            </div>
+                                                        <div>
+                                                            <h6 className="text-sm font-medium mb-1">Activities:</h6>
+                                                            <ul className="list-disc list-inside">
+                                                                {plan.activities.map((activity, idx) => (
+                                                                    <li key={idx} className="text-sm text-gray-600">{activity}</li>
+                                                                ))}
+                                                            </ul>
+                                                        </div>
 
+                                                        <div>
+                                                            <h6 className="text-sm font-medium mb-1">Assessment Ideas:</h6>
+                                                            <ul className="list-disc list-inside">
+                                                                {plan.assessmentIdeas.map((idea, idx) => (
+                                                                    <li key={idx} className="text-sm text-gray-600">{idea}</li>
+                                                                ))}
+                                                            </ul>
+                                                        </div>
+                                                    </div>
+                                                </Card>
+                                            ))}
+                                        </div>
+                                    )
+                                },
+                                {
+                                    key: '4',
+                                    label: 'Themes and Discussion',
+                                    children: (
+                                        <div className="space-y-4">
                                             <div>
-                                                <h6 className="text-sm font-medium mb-1">Objectives:</h6>
-                                                <ul className="list-disc list-inside">
-                                                    {plan.objectives.map((objective, idx) => (
-                                                        <li key={idx} className="text-sm text-gray-600">{objective}</li>
+                                                <h4 className="font-medium mb-2">Key Themes</h4>
+                                                <div className="flex flex-wrap gap-2">
+                                                    {selectedContent.educationalResources.themes.map((theme, index) => (
+                                                        <Tag key={index} color="purple">{theme}</Tag>
                                                     ))}
-                                                </ul>
+                                                </div>
                                             </div>
 
                                             <div>
-                                                <h6 className="text-sm font-medium mb-1">Activities:</h6>
+                                                <h4 className="font-medium mb-2">Discussion Questions</h4>
                                                 <ul className="list-disc list-inside">
-                                                    {plan.activities.map((activity, idx) => (
-                                                        <li key={idx} className="text-sm text-gray-600">{activity}</li>
-                                                    ))}
-                                                </ul>
-                                            </div>
-
-                                            <div>
-                                                <h6 className="text-sm font-medium mb-1">Assessment Ideas:</h6>
-                                                <ul className="list-disc list-inside">
-                                                    {plan.assessmentIdeas.map((idea, idx) => (
-                                                        <li key={idx} className="text-sm text-gray-600">{idea}</li>
+                                                    {selectedContent.educationalResources.discussionQuestions.map((question, index) => (
+                                                        <li key={index} className="text-gray-600">{question}</li>
                                                     ))}
                                                 </ul>
                                             </div>
                                         </div>
-                                    </Card>
-                                ))}
-                            </Panel>
-
-                            <Panel header="Themes and Discussion" key="4">
-                                <div className="space-y-4">
-                                    <div>
-                                        <h4 className="font-medium mb-2">Key Themes</h4>
-                                        <div className="flex flex-wrap gap-2">
-                                            {selectedContent.educationalResources.themes.map((theme, index) => (
-                                                <Tag key={index} color="purple">{theme}</Tag>
-                                            ))}
-                                        </div>
-                                    </div>
-
-                                    <div>
-                                        <h4 className="font-medium mb-2">Discussion Questions</h4>
-                                        <ul className="list-disc list-inside">
-                                            {selectedContent.educationalResources.discussionQuestions.map((question, index) => (
-                                                <li key={index} className="text-gray-600">{question}</li>
-                                            ))}
-                                        </ul>
-                                    </div>
-                                </div>
-                            </Panel>
-                        </Collapse>
+                                    )
+                                }
+                            ]}
+                        />
                     </Card>
                 </div>
             )}

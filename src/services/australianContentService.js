@@ -1,7 +1,10 @@
 import axios from 'axios';
 import { australianPlays, australianMovies } from '../models/AustralianContent';
 
-const API_URL = 'http://localhost:3001/api/australian-content';
+// Get the base API URL based on the environment
+const API_URL = process.env.NODE_ENV === 'production' 
+    ? '/api/australian-content'  // In production, use relative path
+    : 'http://localhost:3001/api/australian-content'; // In development, use localhost
 
 export const australianContentService = {
     // Fetch all plays
