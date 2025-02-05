@@ -4,6 +4,7 @@ import ClassroomManagementDashboard from './components/classroom-management/Clas
 import ResourceBankDashboard from './components/resource-bank/ResourceBankDashboard';
 import InteractiveEngagementDashboard from './components/interactive-learning/InteractiveEngagementDashboard';
 import ParentCommunicationDashboard from './components/parent-communication/ParentCommunicationDashboard';
+import { GradingDashboard } from './components/grading-system';
 
 function App() {
   return (
@@ -41,6 +42,12 @@ function App() {
                   >
                     Parent Communication
                   </Link>
+                  <Link
+                    to="/grading"
+                    className="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
+                  >
+                    Grading System
+                  </Link>
                 </div>
               </div>
               <div className="hidden sm:ml-6 sm:flex sm:items-center">
@@ -66,12 +73,15 @@ function App() {
         </nav>
 
         <main className="py-10">
-          <Routes>
-            <Route path="/" element={<ClassroomManagementDashboard />} />
-            <Route path="/resources" element={<ResourceBankDashboard />} />
-            <Route path="/interactive" element={<InteractiveEngagementDashboard />} />
-            <Route path="/communication" element={<ParentCommunicationDashboard />} />
-          </Routes>
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <Routes>
+              <Route path="/" element={<ClassroomManagementDashboard />} />
+              <Route path="/resources" element={<ResourceBankDashboard />} />
+              <Route path="/interactive" element={<InteractiveEngagementDashboard />} />
+              <Route path="/communication" element={<ParentCommunicationDashboard />} />
+              <Route path="/grading" element={<GradingDashboard />} />
+            </Routes>
+          </div>
         </main>
       </div>
     </Router>

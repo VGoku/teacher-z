@@ -1,32 +1,40 @@
 {
-  "name": "teacher-test",
-  "version": "0.1.0",
+  "name": "teacher-z",
   "private": true,
+  "version": "0.0.0",
+  "type": "module",
   "scripts": {
-    "dev": "concurrently \"npm run dev:client\" \"npm run dev:server\"",
-    "dev:client": "vite",
-    "dev:server": "node server.js",
-    "clean": "npx rimraf dist",
-    "build": "npm run clean && npm run generate-favicon && vite build",
-    "generate-favicon": "node scripts/generate-favicon.js",
-    "vercel-build": "npm run build",
+    "dev": "concurrently \"npm run dev:frontend\" \"npm run dev:backend\"",
+    "dev:frontend": "vite",
+    "dev:backend": "node server.js",
+    "build": "vite build",
+    "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview"
   },
   "dependencies": {
-    "dotenv": "^16.0.0",
+    "@ant-design/icons": "^5.0.0",
+    "antd": "^5.0.0",
+    "axios": "^1.6.7",
+    "cors": "^2.8.5",
     "express": "^4.18.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-router-dom": "^7.1.5"
+    "react-router-dom": "^6.22.0",
+    "recharts": "^2.15.1"
   },
   "devDependencies": {
-    "@vitejs/plugin-react": "^3.0.0",
-    "autoprefixer": "^10.4.12",
-    "concurrently": "^8.0.0",
-    "postcss": "^8.4.16",
-    "rimraf": "^3.0.2",
-    "sharp": "^0.32.6",
-    "tailwindcss": "^3.2.7",
-    "vite": "^4.0.0"
+    "@types/react": "^18.2.43",
+    "@types/react-dom": "^18.2.17",
+    "@vitejs/plugin-react": "^4.2.1",
+    "autoprefixer": "^10.4.17",
+    "concurrently": "^8.2.2",
+    "esbuild": "^0.18.20",
+    "eslint": "^8.55.0",
+    "eslint-plugin-react": "^7.33.2",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-react-refresh": "^0.4.5",
+    "postcss": "^8.4.33",
+    "tailwindcss": "^3.4.1",
+    "vite": "^4.5.0"
   }
 }

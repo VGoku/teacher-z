@@ -1,19 +1,27 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import LessonTemplates from './LessonTemplates';
+import ObjectiveTracker from './ObjectiveTracker';
+import ResourceManager from './ResourceManager';
+import { useNavigate } from 'react-router-dom';
 
 const LessonPlanner = ({ lessons, resources, onAddLesson, onUpdateLesson }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [selectedLesson, setSelectedLesson] = useState(null);
+  const [activeTab, setActiveTab] = useState('form');
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     title: '',
     class: '',
     subject: '',
     date: '',
     duration: '',
-    objectives: '',
+    objectives: [],
     activities: '',
     assessment: '',
     materials: [],
-    status: 'planned'
+    resources: [],
+    status: 'planned',
+    collaborators: []
   });
 
   const handleInputChange = (e) => {
@@ -24,22 +32,55 @@ const LessonPlanner = ({ lessons, resources, onAddLesson, onUpdateLesson }) => {
     }));
   };
 
-  const handleMaterialsChange = (e) => {
-    const selectedResources = Array.from(e.target.selectedOptions, option => option.value);
+  const handleObjectivesUpdate = (objectives) => {
     setFormData(prev => ({
       ...prev,
-      materials: selectedResources
+      objectives
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleResourcesUpdate = (resources) => {
+    setFormData(prev => ({
+      ...prev,
+      resources
+    }));
+  };
+
+  const handleTemplateSelect = (template) => {
+    setFormData(prev => ({
+      ...prev,
+      title: template.title,
+      objectives: template.objectives.split('\n').map((obj, index) => ({
+        id: Date.now() + index,
+        description: obj.replace(/^\d+\.\s*/, ''),
+        progress: 0,
+        targetDate: formData.date,
+        notes: '',
+        successCriteria: [],
+        resources: []
+      })),
+      activities: template.activities,
+      assessment: template.assessment,
+      duration: template.duration
+    }));
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    const lessonData = {
+      ...formData,
+      id: selectedLesson?.id || Date.now().toString(),
+      lastModified: new Date().toISOString()
+    };
+
     if (selectedLesson) {
-      onUpdateLesson({ ...formData, id: selectedLesson.id });
+      await onUpdateLesson(lessonData);
     } else {
-      onAddLesson(formData);
+      await onAddLesson(lessonData);
     }
+
     resetForm();
+    setActiveTab('form');
   };
 
   const resetForm = () => {
@@ -49,11 +90,13 @@ const LessonPlanner = ({ lessons, resources, onAddLesson, onUpdateLesson }) => {
       subject: '',
       date: '',
       duration: '',
-      objectives: '',
+      objectives: [],
       activities: '',
       assessment: '',
       materials: [],
-      status: 'planned'
+      resources: [],
+      status: 'planned',
+      collaborators: []
     });
     setSelectedLesson(null);
     setIsEditing(false);
@@ -63,240 +106,300 @@ const LessonPlanner = ({ lessons, resources, onAddLesson, onUpdateLesson }) => {
     setSelectedLesson(lesson);
     setFormData(lesson);
     setIsEditing(true);
+    setActiveTab('form');
+  };
+
+  const handleExport = () => {
+    const lessonJson = JSON.stringify(formData, null, 2);
+    const blob = new Blob([lessonJson], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${formData.title.toLowerCase().replace(/\s+/g, '-')}-lesson-plan.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-      {/* Lesson Form */}
-      <div className="space-y-6">
-        <div className="flex justify-between items-center">
-          <h2 className="text-xl font-semibold">
-            {isEditing ? 'Edit Lesson Plan' : 'Create New Lesson Plan'}
-          </h2>
-          {isEditing && (
-            <button
-              onClick={resetForm}
-              className="text-gray-600 hover:text-gray-800"
-            >
-              Cancel Edit
-            </button>
-          )}
-        </div>
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Lesson Title *
-            </label>
-            <input
-              type="text"
-              name="title"
-              value={formData.title}
-              onChange={handleInputChange}
-              className="w-full px-3 py-2 border rounded-md"
-              required
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Class *
-              </label>
-              <input
-                type="text"
-                name="class"
-                value={formData.class}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border rounded-md"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Subject *
-              </label>
-              <input
-                type="text"
-                name="subject"
-                value={formData.subject}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border rounded-md"
-                required
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Date *
-              </label>
-              <input
-                type="date"
-                name="date"
-                value={formData.date}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border rounded-md"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Duration (minutes) *
-              </label>
-              <input
-                type="number"
-                name="duration"
-                value={formData.duration}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border rounded-md"
-                required
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Learning Objectives *
-            </label>
-            <textarea
-              name="objectives"
-              value={formData.objectives}
-              onChange={handleInputChange}
-              rows="3"
-              className="w-full px-3 py-2 border rounded-md"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Class Activities *
-            </label>
-            <textarea
-              name="activities"
-              value={formData.activities}
-              onChange={handleInputChange}
-              rows="4"
-              className="w-full px-3 py-2 border rounded-md"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Assessment Methods
-            </label>
-            <textarea
-              name="assessment"
-              value={formData.assessment}
-              onChange={handleInputChange}
-              rows="2"
-              className="w-full px-3 py-2 border rounded-md"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Teaching Materials
-            </label>
-            <select
-              multiple
-              name="materials"
-              value={formData.materials}
-              onChange={handleMaterialsChange}
-              className="w-full px-3 py-2 border rounded-md"
-            >
-              {resources.map(resource => (
-                <option key={resource.id} value={resource.id}>
-                  {resource.title}
-                </option>
-              ))}
-            </select>
-            <p className="text-sm text-gray-500 mt-1">
-              Hold Ctrl/Cmd to select multiple items
-            </p>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Status
-            </label>
-            <select
-              name="status"
-              value={formData.status}
-              onChange={handleInputChange}
-              className="w-full px-3 py-2 border rounded-md"
-            >
-              <option value="planned">Planned</option>
-              <option value="in-progress">In Progress</option>
-              <option value="completed">Completed</option>
-            </select>
-          </div>
-
+    <div className="space-y-6">
+      {/* Navigation Tabs */}
+      <div className="border-b">
+        <nav className="flex gap-4">
           <button
-            type="submit"
-            className="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600"
+            onClick={() => setActiveTab('form')}
+            className={`py-2 px-4 ${activeTab === 'form'
+                ? 'border-b-2 border-blue-500 text-blue-600'
+                : 'text-gray-500 hover:text-gray-700'
+              }`}
           >
-            {isEditing ? 'Update Lesson Plan' : 'Create Lesson Plan'}
+            Lesson Details
           </button>
-        </form>
+          <button
+            onClick={() => setActiveTab('templates')}
+            className={`py-2 px-4 ${activeTab === 'templates'
+                ? 'border-b-2 border-blue-500 text-blue-600'
+                : 'text-gray-500 hover:text-gray-700'
+              }`}
+          >
+            Templates
+          </button>
+          <button
+            onClick={() => setActiveTab('objectives')}
+            className={`py-2 px-4 ${activeTab === 'objectives'
+                ? 'border-b-2 border-blue-500 text-blue-600'
+                : 'text-gray-500 hover:text-gray-700'
+              }`}
+          >
+            Objectives
+          </button>
+          <button
+            onClick={() => setActiveTab('resources')}
+            className={`py-2 px-4 ${activeTab === 'resources'
+                ? 'border-b-2 border-blue-500 text-blue-600'
+                : 'text-gray-500 hover:text-gray-700'
+              }`}
+          >
+            Resources
+          </button>
+        </nav>
+      </div>
+
+      {/* Tab Content */}
+      <div className="mt-6">
+        {activeTab === 'form' && (
+          <div className="space-y-6">
+            <div className="flex justify-between items-center">
+              <h2 className="text-xl font-semibold">
+                {isEditing ? 'Edit Lesson Plan' : 'Create New Lesson Plan'}
+              </h2>
+              <div className="flex gap-2">
+                {isEditing && (
+                  <button
+                    onClick={resetForm}
+                    className="px-4 py-2 text-gray-600 hover:text-gray-800"
+                  >
+                    Cancel Edit
+                  </button>
+                )}
+                <button
+                  onClick={handleExport}
+                  className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200"
+                  disabled={!formData.title}
+                >
+                  Export
+                </button>
+              </div>
+            </div>
+
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Lesson Title *
+                </label>
+                <input
+                  type="text"
+                  name="title"
+                  value={formData.title}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border rounded-md"
+                  required
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Class *
+                  </label>
+                  <input
+                    type="text"
+                    name="class"
+                    value={formData.class}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border rounded-md"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Subject *
+                  </label>
+                  <input
+                    type="text"
+                    name="subject"
+                    value={formData.subject}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border rounded-md"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Date *
+                  </label>
+                  <input
+                    type="date"
+                    name="date"
+                    value={formData.date}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border rounded-md"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Duration (minutes) *
+                  </label>
+                  <input
+                    type="number"
+                    name="duration"
+                    value={formData.duration}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border rounded-md"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Class Activities *
+                </label>
+                <textarea
+                  name="activities"
+                  value={formData.activities}
+                  onChange={handleInputChange}
+                  rows="4"
+                  className="w-full px-3 py-2 border rounded-md"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Assessment Methods
+                </label>
+                <textarea
+                  name="assessment"
+                  value={formData.assessment}
+                  onChange={handleInputChange}
+                  rows="2"
+                  className="w-full px-3 py-2 border rounded-md"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Status
+                </label>
+                <select
+                  name="status"
+                  value={formData.status}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border rounded-md"
+                >
+                  <option value="planned">Planned</option>
+                  <option value="in-progress">In Progress</option>
+                  <option value="completed">Completed</option>
+                </select>
+              </div>
+
+              <button
+                type="submit"
+                className="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600"
+              >
+                {isEditing ? 'Update Lesson Plan' : 'Create Lesson Plan'}
+              </button>
+            </form>
+          </div>
+        )}
+
+        {activeTab === 'templates' && (
+          <LessonTemplates
+            onApplyTemplate={handleTemplateSelect}
+            onSaveTemplate={(templates) => {
+              // Handle saving templates to backend/storage
+              console.log('Saving templates:', templates);
+            }}
+          />
+        )}
+
+        {activeTab === 'objectives' && (
+          <ObjectiveTracker
+            objectives={formData.objectives}
+            onUpdateObjectives={handleObjectivesUpdate}
+          />
+        )}
+
+        {activeTab === 'resources' && (
+          <ResourceManager
+            resources={formData.resources}
+            onAddResource={(resource) => {
+              setFormData(prev => ({
+                ...prev,
+                resources: [...prev.resources, resource]
+              }));
+            }}
+            onUpdateResource={(resource) => {
+              setFormData(prev => ({
+                ...prev,
+                resources: prev.resources.map(r =>
+                  r.id === resource.id ? resource : r
+                )
+              }));
+            }}
+            onDeleteResource={(resourceId) => {
+              setFormData(prev => ({
+                ...prev,
+                resources: prev.resources.filter(r => r.id !== resourceId)
+              }));
+            }}
+          />
+        )}
       </div>
 
       {/* Lessons List */}
-      <div>
+      <div className="mt-8">
         <h2 className="text-xl font-semibold mb-4">Your Lesson Plans</h2>
-        <div className="space-y-4">
-          {lessons.length === 0 ? (
-            <p className="text-gray-500">No lesson plans created yet.</p>
-          ) : (
-            lessons.map(lesson => (
-              <div
-                key={lesson.id}
-                className="border rounded-lg p-4 hover:shadow-md transition-shadow"
-              >
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h3 className="font-medium">{lesson.title}</h3>
-                    <p className="text-sm text-gray-600">
-                      {lesson.class} - {lesson.subject}
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      {new Date(lesson.date).toLocaleDateString()} ({lesson.duration} mins)
-                    </p>
-                  </div>
-                  <span className={`px-2 py-1 rounded text-sm ${
-                    lesson.status === 'completed' ? 'bg-green-100 text-green-800' :
-                    lesson.status === 'in-progress' ? 'bg-yellow-100 text-yellow-800' :
-                    'bg-blue-100 text-blue-800'
-                  }`}>
-                    {lesson.status}
-                  </span>
-                </div>
-
-                <div className="mt-2 pt-2 border-t">
-                  <button
-                    onClick={() => editLesson(lesson)}
-                    className="text-blue-500 hover:text-blue-600 mr-3"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => {
-                      onUpdateLesson({
-                        ...lesson,
-                        status: lesson.status === 'completed' ? 'planned' : 'completed'
-                      });
-                    }}
-                    className="text-green-500 hover:text-green-600"
-                  >
-                    {lesson.status === 'completed' ? 'Reopen' : 'Mark Complete'}
-                  </button>
-                </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {lessons.map(lesson => (
+            <div
+              key={lesson.id}
+              className="border rounded-lg p-4 space-y-2 hover:border-blue-500 cursor-pointer"
+              onClick={() => editLesson(lesson)}
+            >
+              <div className="flex justify-between items-start">
+                <h3 className="font-medium">{lesson.title}</h3>
+                <span
+                  className={`text-sm px-2 py-1 rounded-md ${lesson.status === 'completed'
+                      ? 'bg-green-100 text-green-800'
+                      : lesson.status === 'in-progress'
+                        ? 'bg-yellow-100 text-yellow-800'
+                        : 'bg-blue-100 text-blue-800'
+                    }`}
+                >
+                  {lesson.status}
+                </span>
               </div>
-            ))
-          )}
+              <p className="text-sm text-gray-600">
+                {lesson.class} - {lesson.subject}
+              </p>
+              <p className="text-sm text-gray-500">
+                {new Date(lesson.date).toLocaleDateString()}
+              </p>
+              <div className="flex justify-between items-center pt-2 text-sm">
+                <span>{lesson.duration} minutes</span>
+                <span className="text-gray-500">
+                  {lesson.objectives.length} objectives
+                </span>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </div>
