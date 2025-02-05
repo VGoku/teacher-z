@@ -25,10 +25,19 @@
           "value": "application/javascript; charset=utf-8"
         }
       ]
+    },
+    {
+      "source": "/assets/(.*)\\.css$",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "text/css; charset=utf-8"
+        }
+      ]
     }
   ],
   "routes": [
     { "handle": "filesystem" },
-    { "src": "/(.*)", "dest": "/index.html" }
+    { "src": "^/(?!assets/).*", "dest": "/index.html" }
   ]
 } 
