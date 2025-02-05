@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { australianPlays, australianMovies } from '../models/AustralianContent';
 
 const API_URL = 'http://localhost:3001/api/australian-content';
 
@@ -7,10 +8,10 @@ export const australianContentService = {
     getAllPlays: async () => {
         try {
             const response = await axios.get(`${API_URL}/plays`);
-            return response.data;
+            return response.data.length > 0 ? response.data : australianPlays;
         } catch (error) {
             console.error('Error fetching plays:', error);
-            throw error;
+            return australianPlays; // Return static data on error
         }
     },
 
@@ -29,10 +30,10 @@ export const australianContentService = {
     getAllMovies: async () => {
         try {
             const response = await axios.get(`${API_URL}/movies`);
-            return response.data;
+            return response.data.length > 0 ? response.data : australianMovies;
         } catch (error) {
             console.error('Error fetching movies:', error);
-            throw error;
+            return australianMovies; // Return static data on error
         }
     },
 
@@ -56,7 +57,20 @@ export const australianContentService = {
             return response.data;
         } catch (error) {
             console.error('Error searching content:', error);
-            throw error;
+            // Return filtered static data on error
+            const searchValue = query.toLowerCase();
+            return {
+                plays: australianPlays.filter(play =>
+                    play.title.toLowerCase().includes(searchValue) ||
+                    play.playwright.toLowerCase().includes(searchValue) ||
+                    play.themes.some(theme => theme.toLowerCase().includes(searchValue))
+                ),
+                movies: australianMovies.filter(movie =>
+                    movie.title.toLowerCase().includes(searchValue) ||
+                    movie.director.toLowerCase().includes(searchValue) ||
+                    movie.themes.some(theme => theme.toLowerCase().includes(searchValue))
+                )
+            };
         }
     },
 

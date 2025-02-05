@@ -1,8 +1,9 @@
+// @ts-check
 import express from 'express';
 import cors from 'cors';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
-import { australianPlays, australianMovies } from './src/models/AustralianContent.js';
+import { australianPlays, australianMovies, educationalPlatforms } from './src/models/AustralianContent.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -15,51 +16,71 @@ app.use(express.json());
 
 // Routes for Australian content
 app.get('/api/australian-content/plays', (req, res) => {
-  res.json(australianPlays);
+  try {
+    res.json(australianPlays);
+  } catch (error) {
+    console.error('Error serving plays:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
 });
 
 app.get('/api/australian-content/movies', (req, res) => {
-  res.json(australianMovies);
+  try {
+    res.json(australianMovies);
+  } catch (error) {
+    console.error('Error serving movies:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
 });
 
 app.get('/api/australian-content/search', (req, res) => {
-  const { query } = req.query;
-  if (!query) {
-    return res.status(400).json({ message: 'Search query is required' });
+  try {
+    const { query } = req.query;
+    if (!query) {
+      return res.status(400).json({ message: 'Search query is required' });
+    }
+
+    const searchResults = {
+      plays: australianPlays.filter(play =>
+        play.title.toLowerCase().includes(query.toLowerCase()) ||
+        play.playwright.toLowerCase().includes(query.toLowerCase()) ||
+        play.themes.some(theme => theme.toLowerCase().includes(query.toLowerCase()))
+      ),
+      movies: australianMovies.filter(movie =>
+        movie.title.toLowerCase().includes(query.toLowerCase()) ||
+        movie.director.toLowerCase().includes(query.toLowerCase()) ||
+        movie.themes.some(theme => theme.toLowerCase().includes(query.toLowerCase()))
+      )
+    };
+
+    res.json(searchResults);
+  } catch (error) {
+    console.error('Error searching content:', error);
+    res.status(500).json({ message: 'Internal server error' });
   }
-
-  const searchResults = {
-    plays: australianPlays.filter(play =>
-      play.title.toLowerCase().includes(query.toLowerCase()) ||
-      play.playwright.toLowerCase().includes(query.toLowerCase()) ||
-      play.themes.some(theme => theme.toLowerCase().includes(query.toLowerCase()))
-    ),
-    movies: australianMovies.filter(movie =>
-      movie.title.toLowerCase().includes(query.toLowerCase()) ||
-      movie.director.toLowerCase().includes(query.toLowerCase()) ||
-      movie.themes.some(theme => theme.toLowerCase().includes(query.toLowerCase()))
-    )
-  };
-
-  res.json(searchResults);
 });
 
 app.get('/api/australian-content/resources', (req, res) => {
-  const resources = {
-    plays: australianPlays.map(play => ({
-      id: play.id,
-      title: play.title,
-      educationalResources: play.educationalResources,
-      curriculum: play.curriculum
-    })),
-    movies: australianMovies.map(movie => ({
-      id: movie.id,
-      title: movie.title,
-      educationalResources: movie.educationalResources,
-      curriculum: movie.curriculum
-    }))
-  };
-  res.json(resources);
+  try {
+    const resources = {
+      plays: australianPlays.map(play => ({
+        id: play.id,
+        title: play.title,
+        educationalResources: play.educationalResources,
+        curriculum: play.curriculum
+      })),
+      movies: australianMovies.map(movie => ({
+        id: movie.id,
+        title: movie.title,
+        educationalResources: movie.educationalResources,
+        curriculum: movie.curriculum
+      }))
+    };
+    res.json(resources);
+  } catch (error) {
+    console.error('Error serving resources:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
 });
 
 // Error handling middleware
