@@ -1,11 +1,18 @@
 import React, { useState } from 'react';
-import { Card, Tabs, List, Tag, Space, Input, Select, message, Collapse } from 'antd';
-import { FileTextOutlined, VideoCameraOutlined, BookOutlined, LinkOutlined } from '@ant-design/icons';
+import { Card, Tabs, List, Tag, Space, Input, Select, Button, message, Collapse } from 'antd';
+import { FileTextOutlined, VideoCameraOutlined, BookOutlined, LinkOutlined, ArrowUpOutlined, ArrowDownOutlined } from '@ant-design/icons';
 import { australianPlays, australianMovies, educationalPlatforms } from '../../models/AustralianContent';
 
 const { Search } = Input;
 const { Option } = Select;
 const { Panel } = Collapse;
+
+// Add Australian cultural patterns
+const culturalPatterns = {
+    header: `linear-gradient(rgba(0, 0, 51, 0.8), rgba(0, 0, 51, 0.8)),
+             url('https://www.flagmakers.com.au/wp-content/uploads/2017/12/australian-flag-2.jpg')`,
+    indigenous: `url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" stroke="%23CD853F" stroke-width="2" fill="none"/></svg>')`
+};
 
 const AustralianContent = ({ onSelectContent }) => {
     const [plays, setPlays] = useState(australianPlays);
@@ -16,6 +23,10 @@ const AustralianContent = ({ onSelectContent }) => {
     const [ratingFilter, setRatingFilter] = useState('all');
     const [regionFilter, setRegionFilter] = useState('Australia');
     const [selectedContent, setSelectedContent] = useState(null);
+    const [themeFilter, setThemeFilter] = useState([]);
+    const [genreFilter, setGenreFilter] = useState('all');
+    const [sortBy, setSortBy] = useState('title');
+    const [sortOrder, setSortOrder] = useState('asc');
 
     const handleSearch = (value) => {
         setSearchQuery(value);
@@ -46,7 +57,16 @@ const AustralianContent = ({ onSelectContent }) => {
             const matchesYear = yearFilter === 'all' || item?.year?.toString() === yearFilter;
             const matchesRating = ratingFilter === 'all' || item?.rating === ratingFilter;
             const matchesRegion = regionFilter === 'all' || item?.region === regionFilter;
-            return matchesYear && matchesRating && matchesRegion;
+            const matchesThemes = themeFilter.length === 0 ||
+                themeFilter.every(theme => item.themes.includes(theme));
+            const matchesGenre = genreFilter === 'all' || item?.category === genreFilter;
+
+            return matchesYear && matchesRating && matchesRegion && matchesThemes && matchesGenre;
+        }).sort((a, b) => {
+            if (sortOrder === 'asc') {
+                return a[sortBy] > b[sortBy] ? 1 : -1;
+            }
+            return a[sortBy] < b[sortBy] ? 1 : -1;
         });
     };
 
@@ -80,6 +100,41 @@ const AustralianContent = ({ onSelectContent }) => {
         }
     };
 
+    // Add styled header component
+    const AustralianHeader = () => (
+        <div
+            className="relative mb-6 p-8 rounded-lg text-white"
+            style={{
+                background: culturalPatterns.header,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center'
+            }}
+        >
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-900/70 to-red-900/70 rounded-lg"></div>
+            <div className="relative z-10">
+                <h1 className="text-3xl font-bold mb-2">Australian Educational Content</h1>
+                <p className="text-lg opacity-90">
+                    Discover Australia's rich cultural heritage through films and theatrical works
+                </p>
+                <div className="flex gap-4 mt-4">
+                    <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3">
+                        <p className="text-sm font-semibold">{plays.length}</p>
+                        <p className="text-xs">Australian Plays</p>
+                    </div>
+                    <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3">
+                        <p className="text-sm font-semibold">{movies.length}</p>
+                        <p className="text-xs">Australian Films</p>
+                    </div>
+                    <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3">
+                        <p className="text-sm font-semibold">{Object.keys(educationalPlatforms).length}</p>
+                        <p className="text-xs">Learning Platforms</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+
+    // Modify the card rendering to include cultural elements
     const renderContentList = (content, type) => (
         <List
             grid={{ gutter: 16, xs: 1, sm: 2, md: 3, lg: 3, xl: 4, xxl: 4 }}
@@ -89,12 +144,17 @@ const AustralianContent = ({ onSelectContent }) => {
                 <List.Item>
                     <Card
                         hoverable
-                        className={`h-full ${selectedContent?.id === item.id ? 'border-blue-500' : ''}`}
+                        className={`h-full transform transition-all duration-300 hover:scale-105 
+                            ${selectedContent?.id === item.id ? 'border-blue-500 shadow-lg' : ''}`}
+                        style={{
+                            backgroundImage: 'linear-gradient(to bottom right, rgba(255,255,255,0.95), rgba(255,255,255,0.98))',
+                            backgroundSize: '100% 100%'
+                        }}
                         onClick={() => handleContentSelect(item)}
                     >
                         <div className="space-y-2">
                             <div className="flex justify-between items-start">
-                                <h3 className="font-medium">{item.title}</h3>
+                                <h3 className="font-medium text-navy-800">{item.title}</h3>
                                 <Space>
                                     <Tag color={type === 'play' ? 'blue' : 'green'}>
                                         {type === 'play' ? <FileTextOutlined /> : <VideoCameraOutlined />}
@@ -129,6 +189,13 @@ const AustralianContent = ({ onSelectContent }) => {
                                 </p>
                             </div>
                         </div>
+                        <div className="absolute top-0 right-0 w-12 h-12 opacity-10"
+                            style={{
+                                backgroundImage: culturalPatterns.indigenous,
+                                backgroundSize: 'contain',
+                                backgroundRepeat: 'no-repeat'
+                            }}
+                        />
                     </Card>
                 </List.Item>
             )}
@@ -214,6 +281,17 @@ const AustralianContent = ({ onSelectContent }) => {
         ...australianMovies.map(m => m?.region || '')
     ])].filter(Boolean).sort();
 
+    const allThemes = [...new Set([
+        ...australianPlays.flatMap(p => p.themes),
+        ...australianMovies.flatMap(m => m.themes)
+    ])].sort();
+
+    const genres = [...new Set([
+        'all',
+        ...australianPlays.map(p => p.category),
+        ...australianMovies.map(m => m.category)
+    ])].filter(Boolean).sort();
+
     const tabItems = [
         {
             key: 'plays',
@@ -229,39 +307,87 @@ const AustralianContent = ({ onSelectContent }) => {
 
     return (
         <div className="space-y-4">
-            <div className="flex justify-between items-center">
-                <h2 className="text-xl font-semibold">Australian Content</h2>
+            <AustralianHeader />
+
+            <div className="flex justify-between items-center mb-4 bg-white p-4 rounded-lg shadow-sm">
                 <Space wrap>
                     <Select
-                        value={yearFilter || 'all'}
-                        onChange={setYearFilter}
-                        style={{ width: 120 }}
-                    >
-                        <Option value="all">All Years</Option>
-                        {years.map(year => (
-                            <Option key={year} value={year}>{year}</Option>
-                        ))}
-                    </Select>
-                    <Select
-                        value={ratingFilter || 'all'}
-                        onChange={setRatingFilter}
-                        style={{ width: 120 }}
-                    >
-                        <Option value="all">All Ratings</Option>
-                        {ratings.filter(r => r !== 'all' && r).map(rating => (
-                            <Option key={rating} value={rating}>{rating}</Option>
-                        ))}
-                    </Select>
-                    <Select
-                        value={regionFilter || 'all'}
+                        value={regionFilter}
                         onChange={setRegionFilter}
-                        style={{ width: 120 }}
+                        style={{ width: 150 }}
+                        placeholder="Select Region"
                     >
                         <Option value="all">All Regions</Option>
                         {regions.filter(r => r !== 'all' && r).map(region => (
                             <Option key={region} value={region}>{region}</Option>
                         ))}
                     </Select>
+
+                    <Select
+                        value={ratingFilter}
+                        onChange={setRatingFilter}
+                        style={{ width: 120 }}
+                        placeholder="Rating"
+                    >
+                        <Option value="all">All Ratings</Option>
+                        {ratings.filter(r => r !== 'all' && r).map(rating => (
+                            <Option key={rating} value={rating}>{rating}</Option>
+                        ))}
+                    </Select>
+
+                    <Select
+                        mode="multiple"
+                        value={themeFilter}
+                        onChange={setThemeFilter}
+                        style={{ width: 200 }}
+                        placeholder="Select Themes"
+                        maxTagCount={2}
+                    >
+                        {allThemes.map(theme => (
+                            <Option key={theme} value={theme}>{theme}</Option>
+                        ))}
+                    </Select>
+
+                    <Select
+                        value={genreFilter}
+                        onChange={setGenreFilter}
+                        style={{ width: 150 }}
+                        placeholder="Select Genre"
+                    >
+                        <Option value="all">All Genres</Option>
+                        {genres.filter(g => g !== 'all').map(genre => (
+                            <Option key={genre} value={genre}>{genre}</Option>
+                        ))}
+                    </Select>
+
+                    <Select
+                        value={yearFilter}
+                        onChange={setYearFilter}
+                        style={{ width: 120 }}
+                        placeholder="Year"
+                    >
+                        <Option value="all">All Years</Option>
+                        {years.map(year => (
+                            <Option key={year} value={year}>{year}</Option>
+                        ))}
+                    </Select>
+
+                    <Select
+                        value={sortBy}
+                        onChange={setSortBy}
+                        style={{ width: 120 }}
+                        placeholder="Sort By"
+                    >
+                        <Option value="title">Title</Option>
+                        <Option value="year">Year</Option>
+                        <Option value="rating">Rating</Option>
+                    </Select>
+
+                    <Button
+                        onClick={() => setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}
+                        icon={sortOrder === 'asc' ? <ArrowUpOutlined /> : <ArrowDownOutlined />}
+                    />
+
                     <Search
                         placeholder="Search content..."
                         onSearch={handleSearch}
